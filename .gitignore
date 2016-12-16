@@ -2,6 +2,7 @@ elm-stuff
 node_modules
 npm-debug.log
 dist
+elm.js
 log
 tmp
 db/*.sqlite3
