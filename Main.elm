@@ -1,15 +1,16 @@
 module Main exposing (..)
 
 import Array exposing (Array)
+import Random
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
-import Html.CssHelpers exposing (..)
-import MyCss exposing (..)
 
 
-{ id, class, classList } =
-    Html.CssHelpers.withNamespace "home"
+-- import Html.CssHelpers exposing (..)
+-- import MyCss exposing (..)
+--{ id, class, classList } =
+--    Html.CssHelpers.withNamespace "home"
 
 
 type alias Photo =
@@ -25,6 +26,7 @@ type alias Model =
 
 type Msg
     = SelectByUrl String
+    | SelectByIndex Int
     | SurpriseMe
     | SetSize ThumbnailSize
 
@@ -52,11 +54,13 @@ photoArray =
     Array.fromList initialModel.photos
 
 
+main : Program Never Model Msg
 main =
-    Html.beginnerProgram
-        { model = initialModel
+    Html.program
+        { init = ( initialModel, Cmd.none )
         , view = view
         , update = update
+        , subscriptions = (\model -> Sub.none)
         }
 
 
@@ -70,21 +74,29 @@ getPhotoUrl index =
             ""
 
 
+randomPhotoPicker : Random.Generator Int
+randomPhotoPicker =
+    Random.int 0 (Array.length photoArray - 1)
+
+
 
 -- Update
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SelectByIndex index ->
+            ( { model | selectedUrl = getPhotoUrl index }, Cmd.none )
+
         SelectByUrl url ->
-            { model | selectedUrl = url }
+            ( { model | selectedUrl = url }, Cmd.none )
 
         SurpriseMe ->
-            { model | selectedUrl = "2.jpeg" }
+            ( model, Random.generate SelectByIndex randomPhotoPicker )
 
         SetSize size ->
-            { model | chosenSize = size }
+            ( { model | chosenSize = size }, Cmd.none )
 
 
 
@@ -93,7 +105,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class [ Content ] ]
+    div [ class "content" ]
         [ h1 [] [ text "Photo Grove" ]
         , button
             [ onClick SurpriseMe ]
@@ -101,10 +113,10 @@ view model =
         , h3 [] [ text "Thumbnail Size:" ]
         , div [ id "choose-size" ]
             (List.map viewSizeChooser [ Small, Medium, Large ])
-        , div [ id Thumbnails, class [ (sizeToString model.chosenSize) ] ]
+        , div [ id "thumbnails", class (sizeToString model.chosenSize) ]
             (List.map (viewThumbnail model.selectedUrl) model.photos)
         , img
-            [ class [ "large" ]
+            [ class "large"
             , src (urlPrefix ++ "large/" ++ model.selectedUrl)
             ]
             []
