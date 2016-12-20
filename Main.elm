@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Array exposing (Array)
 import Random
+import Http
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (..)
@@ -30,6 +31,7 @@ type Msg
     | SelectByIndex Int
     | SurpriseMe
     | SetSize ThumbnailSize
+    | LoadPhotos (Result Http.Error String)
 
 
 type ThumbnailSize
@@ -47,19 +49,20 @@ initialModel =
     }
 
 
-
---photoArray : Array Photo
---photoArray =
---    Array.fromList initialModel.photos
+initialCmd : Cmd Msg
+initialCmd =
+    "Http://elm-in-action.com/photos/list"
+        |> Http.getString
+        |> Http.send LoadPhotos
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initialModel, Cmd.none )
-        , view = view
+        { init = ( initialModel, initialCmd )
+        , view = viewOrError
         , update = update
-        , subscriptions = (\model -> Sub.none)
+        , subscriptions = (\_ -> Sub.none)
         }
 
 
@@ -103,6 +106,41 @@ update msg model =
 
         SetSize size ->
             ( { model | chosenSize = size }, Cmd.none )
+
+        LoadPhotos (Ok responseStr) ->
+            let
+                urls =
+                    String.split "," responseStr
+
+                photos =
+                    List.map Photo urls
+            in
+                ( { model
+                    | photos = photos
+                    , selectedUrl = List.head urls
+                  }
+                , Cmd.none
+                )
+
+        LoadPhotos (Err _) ->
+            ( { model
+                | loadingError = Just "Error! (Try turniing it off and on again?)"
+              }
+            , Cmd.none
+            )
+
+
+viewOrError : Model -> Html Msg
+viewOrError model =
+    case model.loadingError of
+        Nothing ->
+            view model
+
+        Just errorMessage ->
+            div [ class "error-message" ]
+                [ h1 [] [ text "Photo Grove" ]
+                , p [] [ text errorMessage ]
+                ]
 
 
 
