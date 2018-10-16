@@ -1,13 +1,13 @@
-module Main exposing (..)
+module Main exposing (Model, Msg(..), Photo, ThumbnailSize(..), initialCmd, initialModel, main, photoDecoder, sizeToString, update, urlPrefix, view, viewLarge, viewOrError, viewSizeChooser, viewThumbnail)
 
 import Array exposing (Array)
-import Random
-import Http
 import Html exposing (..)
+import Html.Attributes exposing (class, classList, id, name, src, title, type_)
 import Html.Events exposing (onClick)
-import Html.Attributes exposing (id, class, classList, src, name, type_, title)
-import Json.Decode exposing (string, int, list, Decoder)
-import Json.Decode.Pipeline exposing (decode, required, optional)
+import Http
+import Json.Decode exposing (Decoder, int, list, string)
+import Json.Decode.Pipeline exposing (decode, optional, required)
+import Random
 
 
 -- import Html.CssHelpers exposing (..)
@@ -61,13 +61,16 @@ initialCmd =
         |> Http.send LoadPhotos
 
 
-main : Program Never Model Msg
+
+--main : Program Never Model Msg
+
+
 main =
-    Html.program
+    Browser.element
         { init = ( initialModel, initialCmd )
         , view = viewOrError
         , update = update
-        , subscriptions = (\_ -> Sub.none)
+        , subscriptions = \_ -> Sub.none
         }
 
 

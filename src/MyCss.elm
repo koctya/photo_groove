@@ -1,7 +1,7 @@
-module MyCss exposing (..)
+module MyCss exposing (CssClasses(..), CssIds(..), css, someColor, white)
 
 import Css exposing (..)
-import Css.Elements exposing (body, img, h1, h3, label, button, a)
+import Css.Elements exposing (a, body, button, h1, h3, img, label)
 import Css.Namespace exposing (namespace)
 
 
@@ -97,8 +97,8 @@ css =
 
 
 someColor =
-    (hex "60b5cc")
+    hex "60b5cc"
 
 
 white =
-    (hex "ffffff")
+    hex "ffffff"
